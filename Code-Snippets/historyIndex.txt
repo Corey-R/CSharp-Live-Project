@@ -1,0 +1,131 @@
+// RentalHistoryModels.cs
+ public class RentalHistory
+    {
+        // Creating the table columns for Rental History's Table
+        public int RentalHistoryID { get; set; }
+        public bool RentalDamaged { get; set; }
+        public string DamagesIncurred { get; set; }
+        public string Rental { get; set; }
+    }
+}
+
+// IdentityModels.cs
+        public System.Data.Entity.DbSet<TheatreCMS3.Areas.Rent.Models.RentalHistory> RentalHistories { get; set; }
+
+
+// RentalHistoriesController.cs
+private ApplicationDbContext db = new ApplicationDbContext();
+
+        // GET: Rent/RentalHistories
+        public ActionResult Index(string sortName)
+        {
+            ViewBag.NameSortParm = String.IsNullOrEmpty(sortName) ? "NoExtraSorting" : sortName;            
+            var rentals = (from r in db.RentalHistories
+                           select r);
+            switch (sortName)
+            {
+                case "NoExtraSorting":
+                    rentals = rentals.OrderByDescending(r => r.RentalHistoryID);
+                    break;
+                case "Damaged Rentals":
+                    rentals = rentals.OrderByDescending(r => r.RentalDamaged == true).ThenByDescending(r => r.RentalHistoryID);
+                    break;
+                case "Undamaged Rentals":
+                    rentals = rentals.OrderByDescending(r => r.RentalDamaged == false).ThenByDescending(r => r.RentalHistoryID);
+                    break;
+                case "RentalsAtoZ":
+                    rentals = rentals.OrderBy(r => r.Rental);
+                    break;
+                case "RentalsZtoA":
+                    rentals = rentals.OrderByDescending(r => r.Rental);
+                    break;
+                default:
+                    rentals = rentals.OrderByDescending(r => r.RentalHistoryID);
+                    break;
+            }
+            return View(rentals.ToList());
+        }    
+
+
+@* index.cshtml
+
+@model IEnumerable<TheatreCMS3.Areas.Rent.Models.RentalHistory>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Most Recent Rental Histories</h2>
+<div class="row">
+    <a href="@Url.Action("Create", "RentalHistories")" class="col-md-1 btn btn-dark" data-toggle="tooltip" title="Create New" style="background: var(--dark-color);">
+        <span class="fa fa-plus"></span>
+    </a>
+    <label for="SortingOptions" class="col Rent-Index--SortLabel"> </label>
+    <button class="Rent-Index--SortButton col-md-1 btn btn-secondary dropdown-toggle" type="button" id="Rent-Index--SortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Sort By:</button>
+    <div class="Rent-Index--DropdownMenu dropdown-menu" aria-labelledby="Rent-Index--SortDropdown">
+        <a class="Rent-Index--SortItems btn btn-dark dropdown-item" data-ajax="true" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-update="#CustomerList" href="@Url.Action("Index", "RentalHistories", new { sortName = "NoExtraSorting" })">No Extra Sorting...</a>
+        <a class="Rent-Index--SortItems btn btn-dark dropdown-item" data-ajax="true" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-update="#CustomerList" href="@Url.Action("Index", "RentalHistories", new { sortName = "Damaged Rentals" })">Damaged Rentals</a>
+        <a class="Rent-Index--SortItems btn btn-dark dropdown-item" data-ajax="true" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-update="#CustomerList" href="@Url.Action("Index", "RentalHistories", new { sortName = "Undamaged Rentals" })">Undamaged Rentals </a>
+        <a class="Rent-Index--SortItems btn btn-dark dropdown-item" data-ajax="true" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-update="#CustomerList" href="@Url.Action("Index", "RentalHistories", new { sortName = "RentalsAtoZ" })">Rentals A - Z</a>
+        <a class="Rent-Index--SortItems btn btn-dark dropdown-item" data-ajax="true" data-ajax-method="GET" data-ajax-mode="replace" data-ajax-update="#CustomerList" href="@Url.Action("Index", "RentalHistories", new { sortName = "RentalsZtoA" })">Rentals Z - A</a>
+
+    </div>
+</div>
+<table class="Rent-Index--Table" id="RntIndTbl">
+    @foreach (var item in Model)
+    {
+        <tr class="Rent-Index--Tr">
+            <td id="Rent-Index--RentalDamageColumn">
+                @if (item.RentalDamaged == true)
+                {
+                    <span class="Rent-Index--XIcon fa fa-times-circle"></span>
+                }
+                else
+                {
+                    <span class="Rent-Index--CheckIcon fa fa-check-circle"></span>
+                }
+
+            </td>
+            <td id="Rent-Index--RentalColumn">
+                <span class="Rent-Index--Badges badge badge-light">
+                    @Html.DisplayFor(modelItem => item.Rental)
+                </span>
+            </td>
+            <td class="Rent-Index--DmgNotesColumn text-left">
+                @if (item.RentalDamaged == true)
+                {
+                    <span class="Rent-Index--DmgIncur">@Html.DisplayFor(modelItem => item.DamagesIncurred)</span>
+                }
+                else
+                {
+                    <span class="Rent-Index--Notes" n>@Html.DisplayFor(modelItem => item.DamagesIncurred)</span>
+
+                }
+
+            </td>
+            <td class="text-left">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="Rent-Index--Dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="fa fa-ellipsis-v"></span>
+                </button>
+                <div class="Rent-Index--DropdownMenu dropdown-menu" aria-labelledby="Rent-Index--Dropdown">
+                    <a class="Rent-Index--EditLink dropdown-item btn btn-dark" href="@Url.Action("Edit", "RentalHistories", new { id = item.RentalHistoryID })">
+                        <span class="fa fa-edit" style="margin-right: 12px;"></span>Edit
+                    </a>
+                    <a class="Rent-Index--DetailsLink dropdown-item btn btn-dark" href="@Url.Action("Details", "RentalHistories", new { id = item.RentalHistoryID })">
+                        <span class="fa fa-info-circle" style="margin-right: 12px;"></span>Details
+                    </a>
+                    <a class="Rent-Index--DeleteLink dropdown-item btn btn-dark" href="@Url.Action("Delete", "RentalHistories", new { id = item.RentalHistoryID })">
+                        <span class="fa fa-trash" style="margin-right: 12px;"></span>Delete
+                    </a>
+                </div>
+            </td>
+        </tr>
+    }
+
+</table>
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

@@ -1,0 +1,19 @@
+@* RentalRequestsIndex.cshtml
+
+<div class="accordion" id="RentIndAccordion">
+        <div class="card">
+            <div class="Rent-Index--CardContainer  card-header" id="RntIndHeadingOne">                
+                    <button class="Rent-Index--CardButton  btn btn-primary text-left" type="button" data-toggle="collapse" data-target="#@item.ContactPerson" aria-expanded="true" aria-controls="collapseOne">
+                        <label class="Rent-Index--Labels">Company: </label>
+                        @Html.DisplayFor(modelItem => item.Company)
+                        <div class="row">
+                            <div class="col">
+                                <label class="Rent-Index--Labels">Contact Person: </label>
+                                @Html.DisplayFor(modelItem => item.ContactPerson)
+                            </div>
+                            <div class="col text-right">
+                                <label class="Rent-Index--Labels">Time Remaining: </label>                                
+                            </div>
+                        </div>
+                    </button>                
+            </div>
